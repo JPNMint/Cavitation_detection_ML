@@ -5,6 +5,7 @@ from scipy.fftpack import fft, ifft
 from scipy.stats import norm, kurtosis, skew
 import pandas as pd
 import warnings
+import os
 
 
 ## reading in multiple wav files
@@ -143,11 +144,37 @@ def feature_extraction(df, label):
 
 
 
-#feature pipeline
 
-def feature_pipe (datasets, splits_in_sec, label):
-    sr, df = read_wav(datasets)
-    df_split = splitting(sr[0],df, splits_in_sec)
-    freq, df_ftt = fourier_trans(sr[0],df_split)
-    output_df = feature_extraction(df_ftt, label)
-    return len(df_split), output_df
+def feature_pipe (path, splits_in_sec):
+    target_path = Path.cwd()/path
+
+    if not (target_path/"cavitation").is_dir():
+        print("Folder named cavitation does not exist!")
+        return
+    if not (target_path/"no_cavitation").is_dir():
+        print("Folder named no_cavitationn does not exist!")
+        return
+    no_cav_f_names = list((target_path/"no_cavitation").glob('*.wav'))
+    cav_f_names = list((target_path/"cavitation").glob('*.wav'))
+
+
+    sr_cav, df_cav = read_wav(cav_f_names)
+    df_split_cav = splitting(sr_cav[0],df_cav, splits_in_sec)
+    freq_cav, df_ftt_cav = fourier_trans(sr_cav[0],df_split_cav)
+    output_df_cav = feature_extraction(df_ftt_cav, "Cavitation") #cavitation = 1
+
+
+
+    sr_no_cav, df_no_cav = read_wav(no_cav_f_names)
+    df_split_no_cav = splitting(sr_no_cav[0], df_no_cav, splits_in_sec)
+    freq_no_cav, df_ftt_no_cav = fourier_trans(sr_no_cav[0], df_split_no_cav)
+    output_df_no_cav = feature_extraction(df_ftt_no_cav, "No Cavitation") #no_cavitation = 0
+
+
+    df = pd.concat([output_df_cav, output_df_no_cav])
+    print(df)
+    return len(df_split_cav)+len(df_split_no_cav), df
+
+
+if __name__ == "__main__":
+    feature_pipe("data/sideglued2_oilpump", 2)

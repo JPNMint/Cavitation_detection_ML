@@ -5,7 +5,11 @@ import pandas as pd
 import xgboost as xgb
 from sklearn import metrics
 from sklearn.metrics import precision_recall_fscore_support as score
+from pathlib import Path
 
+
+
+import pickle
 def xg_boost_pipe(df,test_split, param, grid: bool = False, eval = "roc_auc"):
     train, test = train_test_split(df, test_size = test_split, random_state = 1623806)
     X_train = train.loc[:, df.columns != 'Cavitation'].astype('float')
@@ -61,11 +65,11 @@ default_param = {
         }
 
 
-def Classification_pipe_all (window_size, cavitation_data, no_cavitation_data, test_split_ratio, evaluation ="accuracy", parameter = default_param , window_size_eval: bool = False, gridsearch: bool = True):
+def Classification_pipe_all (window_size,folder , test_split_ratio, evaluation ="accuracy", parameter = default_param , window_size_eval: bool = False, gridsearch: bool = True):
     # list of window sizes (if window_size_eval is set to true, otherwise only 1 window size) ,
     # list of cavitation files, list of no-cavitation files, train test split, evaluation method, window size evaluation
     #read in files
-
+    print("Initializing training!")
     if  not isinstance(parameter, dict):
         raise TypeError("Parameter need to be of type dictionary")
     #parameter = {
@@ -87,10 +91,12 @@ def Classification_pipe_all (window_size, cavitation_data, no_cavitation_data, t
             raise TypeError("Invalid window sizes!")
         for splits in window_size:
             splits_list.append(splits)
-            non_cav_len, no_cav_df = feature_pipe(no_cavitation_data,splits,"No Cavitation")
-            cav_len, cav_df = feature_pipe(cavitation_data,splits,"Cavitation")
-            final_df = pd.concat([no_cav_df, cav_df])
-            length = cav_len + non_cav_len
+            # non_cav_len, no_cav_df = feature_pipe(no_cavitation_data,splits,"No Cavitation")
+            # cav_len, cav_df = feature_pipe(cavitation_data,splits,"Cavitation")
+            # final_df = pd.concat([no_cav_df, cav_df])
+            # length = cav_len + non_cav_len
+            length, final_df = feature_pipe(folder, window_size)
+
             sample_size_list.append(length)
             print(f"{splits} second splits")
 
@@ -111,14 +117,13 @@ def Classification_pipe_all (window_size, cavitation_data, no_cavitation_data, t
         optim = output.loc[output[evaluation].idxmax(), 'Splits_in_sec']
 
         print(f"\n RESULT: window size evaulation based on {evaluation}, best split size is {optim} seconds!")
+        length, final_df = feature_pipe(folder, window_size)
 
-        non_cav_len, no_cav_df = feature_pipe(no_cavitation_data, optim, "No Cavitation")
-        cav_len, cav_df = feature_pipe(cavitation_data, splits, "Cavitation")
-        final_df = pd.concat([no_cav_df, cav_df])
 
         # start xg boost gridsearch for final model
         train, test, model, predicted_y, importance = xg_boost_pipe(final_df, test_split_ratio, parameter, grid=True, eval = evaluation)
-
+        filename = Path.cwd() / 'data/SVM_model_window_eval.sav'
+        pickle.dump(model, open(filename, 'wb'))
         print(f'\n Classification report on unseen test set:')
         print(f"\n accuracy:{eval['accuracy']}, f1: {eval['macro avg']['f1-score']}")
 
@@ -132,14 +137,20 @@ def Classification_pipe_all (window_size, cavitation_data, no_cavitation_data, t
         if not isinstance(window_size,(float,int)):
             raise TypeError("Only input one variable when split evaluation is set to false.")
         else:
-            non_cav_len, no_cav_df = feature_pipe(no_cavitation_data, window_size, "No Cavitation")
-            cav_len, cav_df = feature_pipe(cavitation_data, window_size, "Cavitation")
-            final_df = pd.concat([no_cav_df, cav_df])
-            length = cav_len + non_cav_len
+            # non_cav_len, no_cav_df = feature_pipe(no_cavitation_data, window_size, "No Cavitation")
+            # cav_len, cav_df = feature_pipe(cavitation_data, window_size, "Cavitation")
+            # final_df = pd.concat([no_cav_df, cav_df])
+            # length = cav_len + non_cav_len
+            length, final_df = feature_pipe(folder, window_size)
             print(f'\n Done! We have {length} samples!')
 
             train, test, model, predicted_y, importance = xg_boost_pipe(final_df, test_split_ratio, parameter, grid = gridsearch, eval = evaluation)
 
-
+            filename = Path.cwd()/'data/SVM_model_no_grid.sav'
+            pickle.dump(model, open(filename, 'wb'))
 
             return train, test, model, importance
+
+
+if __name__ == "__main__":
+    Classification_pipe_all (1, "data/Training_all", 0.2, evaluation ="accuracy", parameter = default_param , window_size_eval = True, gridsearch = True)
