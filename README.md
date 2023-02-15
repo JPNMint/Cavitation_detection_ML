@@ -39,7 +39,7 @@ kinoshita.yk@icloud.com
 
 ### How to run:
 
-To train and evaluate all models used in this project, run train_and_eva_all_models.py
+To train and evaluate all SVM models used in this project, run train_and_eva_all_models.py
 
 Data sets from the experiments can be made available on inquiry.
 The Senzoro GmbH Testing data set will not be made public.
