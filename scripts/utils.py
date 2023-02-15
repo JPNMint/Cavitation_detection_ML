@@ -13,6 +13,12 @@ import librosa.display
 
 ## reading in multiple wav files
 def read_wav(dataset_names):
+    '''
+    Read csv
+    :param dataset_names: filenames
+    :return: samplerate and data
+    '''
+
     with warnings.catch_warnings():
         warnings.simplefilter("ignore")
         samplerate = []
@@ -31,6 +37,7 @@ def read_wav(dataset_names):
 
 
 def plot_timewave(datapath):
+
     sr, data = wavfile.read(datapath)
     length = data.shape[0] / sr
     time = np.linspace(0., length, data.shape[0])
@@ -176,8 +183,8 @@ def feature_extraction(df, label, sr):
     if label == "No Cavitation":
         df_features["Cavitation"] = 0
 
-    if label != "No Cavitation" and label != "Cavitation":
-        df_features["Cavitation"] = label
+    # if label != "No Cavitation" and label != "Cavitation":
+    #     df_features["Cavitation"] = label
     return df_features
 
 
@@ -310,7 +317,9 @@ def feature_extraction_single(df, label):
         df_features["Cavitation"] = 0
 
     if label != "No Cavitation" and label != "Cavitation":
+
         df_features["Cavitation"] = label
+
     return df_features
 
 

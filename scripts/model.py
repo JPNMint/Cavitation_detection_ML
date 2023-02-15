@@ -18,7 +18,15 @@ default_param = {
         }
 
 def xg_boost_pipe(df, param = default_param, grid: bool = False, eval = "roc_auc", name=None ):
-
+    '''
+    Training pipe for xgboost
+    :param df: Input data set, should go through feature_pipe function first
+    :param param: parameter for grid search
+    :param grid: bool for grid search activation
+    :param eval: set evaluation metric
+    :param name: name of model for csv file
+    :return: best model and feature importance
+    '''
 
     X = df.loc[:, df.columns != 'Cavitation'].astype('float')
     y = df["Cavitation"]
@@ -74,105 +82,57 @@ def xg_boost_pipe(df, param = default_param, grid: bool = False, eval = "roc_auc
         return model, importance
 
 
-def Classification_pipe_all (window_size,folder, evaluation ="accuracy", parameter = default_param , window_size_eval: bool = False, gridsearch: bool = True, save_folder = "models"):
+def Classification_pipe_all (window_size,folder, evaluation = "accuracy", parameter = default_param , gridsearch: bool = True, save_folder = "models"):
     # list of window sizes (if window_size_eval is set to true, otherwise only 1 window size) ,
     # list of cavitation files, list of no-cavitation files, train test split, evaluation method, window size evaluation
-    #read in files
+    '''
+    Training pipe for xgboost
+    :param window_size: Window size for training
+    :param evaluation: evaluation metric
+    :param parameter: parameter for grid search
+    :param gridsearch: bool for grid search activation
+    :param save_folder: save folder for model
+    :return: best model and feature importance
+    '''
+
     print("Initializing training!")
     if  not isinstance(parameter, dict):
         raise TypeError("Parameter need to be of type dictionary")
-    #parameter = {
-    #        'max_depth': range (2, 10, 1),
-    #        'n_estimators': range(100, 1000, 100),
-    #        'learning_rate': [0.1, 0.01, 0.05]
-    #    }
-    # if window_size_eval == True:
-    #
-    #     print(f"Window size evaluation is set to true, range is {window_size}")
-    #     print(f"\n Evaluation method is {evaluation}")
-    #     f1_result = []
-    #     acc_result = []
-    #     sample_size_list = []
-    #     splits_list = []
-    #
-    #     # loop all splits and get scores
-    #     if isinstance(window_size,(float,int,list)):
-    #         raise TypeError("Invalid window sizes!")
-    #     for splits in window_size:
-    #         splits_list.append(splits)
-    #         # non_cav_len, no_cav_df = feature_pipe(no_cavitation_data,splits,"No Cavitation")
-    #         # cav_len, cav_df = feature_pipe(cavitation_data,splits,"Cavitation")
-    #         # final_df = pd.concat([no_cav_df, cav_df])
-    #         # length = cav_len + non_cav_len
-    #         length, final_df = feature_pipe(folder, splits)
-    #
-    #         sample_size_list.append(length)
-    #         print(f"{splits} second splits")
-    #
-    #         #start xg boost no grid
-    #         model, eval = xg_boost_pipe(final_df,param = parameter, grid = False,name = folder)
-    #
-    #         print(f'\n Classification report on unseen test set:')
-    #         print(f"\n accuracy:{eval['accuracy']}, f1: {eval['macro avg']['f1-score']}")
-    #         f1_result.append(eval['macro avg']['f1-score'])
-    #         acc_result.append(eval["accuracy"])
-    #         print(f'\n -------------------------------------')
-    #     zipped = list(zip(splits_list, sample_size_list, f1_result, acc_result,  ))
-    #     output = pd.DataFrame(zipped, columns=['Splits_in_sec', 'Sample_size', 'f1', 'accuracy'])
-    #
-    #
-    #     #get best model using evaluator
-    #
-    #     optim = output.loc[output[evaluation].idxmax(), 'Splits_in_sec']
-    #
-    #     print(f"\n RESULT: window size evaulation based on {evaluation}, best split size is {optim} seconds!")
-    #     length, final_df = feature_pipe(folder, optim)
-    #
-    #
-    #     # start xg boost gridsearch for final model
-    #     train, test, model, predicted_y, importance = xg_boost_pipe(final_df, no_split= no_split , test_split = test_split_ratio, param= parameter, grid=True, eval = evaluation,name = folder)
-    #     filename = Path.cwd() / 'data'/output_file
-    #     pickle.dump(model, open(filename, 'wb'))
-    #     print(f'\n Classification report on unseen test set:')
-    #     print(f"\n accuracy:{eval['accuracy']}, f1: {eval['macro avg']['f1-score']}")
-    #
-    #     return model, output
+
+
+
+    if isinstance(window_size,np.ndarray):
+        raise TypeError("This is of type np.ndarray. Only input one variable when split evaluation is set to false.")
+
+    if not isinstance(window_size,(float,int)):
+        raise TypeError("Only input one variable when split evaluation is set to false.")
 
     else:
-
-        if isinstance(window_size,np.ndarray):
-            raise TypeError("This is of type np.ndarray. Only input one variable when split evaluation is set to false.")
-
-        if not isinstance(window_size,(float,int)):
-            raise TypeError("Only input one variable when split evaluation is set to false.")
-
-        else:
             # non_cav_len, no_cav_df = feature_pipe(no_cavitation_data, window_size, "No Cavitation")
             # cav_len, cav_df = feature_pipe(cavitation_data, window_size, "Cavitation")
             # final_df = pd.concat([no_cav_df, cav_df])
             # length = cav_len + non_cav_len
-            print(f"Window size of {window_size} seconds!")
-            length, final_df = feature_pipe(folder, window_size)
-            print(f'\n Done! We have {length} samples!')
+        print(f"Window size of {window_size} seconds!")
+        length, final_df = feature_pipe(folder, window_size)
+        print(f'\n Done! We have {length} samples!')
 
-            model, importance = xg_boost_pipe(final_df, param = parameter, grid = gridsearch, eval = evaluation,name = folder)
-            print('\n Feature importance:')
-            print(importance)
-            if gridsearch:
+        model, importance = xg_boost_pipe(final_df, param = parameter, grid = gridsearch, eval = evaluation,name = folder)
+        print('\n Feature importance:')
+        print(importance)
+        if gridsearch:
 
-                filename = Path().resolve()/f"{save_folder}/model_{PurePath(folder).parts[1]}_grid_{window_size}.sav"
-                pickle.dump(model, open(filename, 'wb'))
-            else:
+            filename = Path().resolve()/f"{save_folder}/model_{PurePath(folder).parts[1]}_grid_{window_size}.sav"
+            pickle.dump(model, open(filename, 'wb'))
+        else:
 
-                filename = Path().resolve()/f"{save_folder}/model_{PurePath(folder).parts[1]}_{window_size}.sav"
-                print(filename)
-                pickle.dump(model, open(filename, 'wb'))
+            filename = Path().resolve()/f"{save_folder}/model_{PurePath(folder).parts[1]}_{window_size}.sav"
+            print(filename)
+            pickle.dump(model, open(filename, 'wb'))
 
-            return model, importance
+        return model, importance
 
 
 if __name__ == "__main__":
-    split_eval_list = np.arange(0.5, 2, 0.5)
    ###best until now #
     #Classification_pipe_all (1, "data/oil_pump_small" , evaluation ="recall", parameter = default_param , window_size_eval = False, gridsearch = True)
 
@@ -186,4 +146,4 @@ if __name__ == "__main__":
     #Classification_pipe_all(1,"data/electrochem_train_test/train", evaluation ="accuracy", parameter = default_param , window_size_eval = False, gridsearch = True,
                             #save_folder = "data/models/standard/")
     #Classification_pipe_all(1,"data/train_oil_vacuum_add_old_pump/", evaluation ="accuracy", parameter = default_param , window_size_eval = False, gridsearch = True, save_folder = "data/train_oil_vacuum_add_old_pump")
-    Classification_pipe_all(1, "data/train_oil_vacuum", evaluation="recall", parameter=default_param,window_size_eval=False, gridsearch=True, save_folder = "data/testing_models")
+    Classification_pipe_all(1, "data/train_oil_vacuum", evaluation="recall", parameter=default_param, gridsearch=True, save_folder = "data/testing_models")
