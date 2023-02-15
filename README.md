@@ -20,6 +20,9 @@ it needs to be mentioned that the test set size was rather small and it remains 
 model will perform well on a larger, more diverse set of data.
 
 
+<img src="pipeline.jpg" width="70%" height="50%" />
+
+
 More information and results in the report Interdisciplinary_project_report_Final.pdf
 
 
