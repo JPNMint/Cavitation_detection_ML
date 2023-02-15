@@ -168,6 +168,9 @@ def eval_auto(window_size, kernel = "poly", test_set = "test_data_2"):
     result_df.to_csv(Path.cwd() / f"data/svm_models/{kernel}/results_{test_set}.csv")
 
 
+    return result_df
+
+
 
 
 
