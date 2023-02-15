@@ -29,9 +29,9 @@ More information and results in the report Interdisciplinary_project_report_Fina
 e1623806@student.tuwien.ac.at
 kinoshita.yk@icloud.com
 
-**Supervisor**: Markus, Valtiner
+**Supervisor**: Markus, Valtiner (Applied Interface Physics)
 
-**Co-Supervisor**: Thomas, Gärtner
+**Co-Supervisor**: Thomas, Gärtner (Machine Learning)
 
 
 ### How to run:
