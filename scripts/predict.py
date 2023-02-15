@@ -3,6 +3,13 @@ from utils import read_wav, feature_extraction, splitting, fourier_trans
 
 
 def predict(model, to_predict, window_size):
+    '''
+    load model and predict on data
+    :param model: model to load
+    :param to_predict: data to predict
+    :param window_size: window size
+
+    '''
     print(f"Predicting {to_predict} with model {model}!")
     filename = Path().resolve() / f"{model}"
     loaded_model = pickle.load(open(filename, 'rb'))
@@ -18,6 +25,16 @@ def predict(model, to_predict, window_size):
 
 
 def feature_pipe_predict (path, splits_in_sec):
+    '''
+    feature pipeline used in predict function
+    ### NOTE Could have added additional param on the original feature pipe instead ###
+
+    :param path: path to data
+    :param splits_in_sec: window size
+    :return: length of data, data
+
+    '''
+
     target_path = Path.cwd()/path
     print(f"Extracting features from {target_path}")
     file_names = list((target_path).glob('*.wav'))

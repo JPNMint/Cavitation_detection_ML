@@ -4,9 +4,16 @@ from scripts.utils import feature_pipe
 from sklearn import metrics
 import numpy as np
 import pandas as pd
-from scripts.model import Classification_pipe_all
+from scripts.xg_model import Classification_pipe_all
 
 def evaluation(model_name, testset_folder, window_size):
+    '''
+    Evaluate performance of model
+    :param model_name: model to laod
+    :param testset_folder: test set folder
+    :param window_size: window size of trained model
+
+    '''
     path = Path.cwd()/"data"/model_name
     #path_split = PurePath(path).parts
     model = pickle.load(open(path, 'rb'))
@@ -20,7 +27,15 @@ def evaluation(model_name, testset_folder, window_size):
     evaluation = metrics.classification_report(y_test, predicted_y, output_dict=True)
     print(evaluation)
 
-def get_feature_importance(df, model_name, testset_folder):
+def get_feature_importance(df, model_name):
+    '''
+    Evaluate performance of model
+    :param df: dataframe for column name
+    :param model_name: model to laod
+    :return: feature importance
+
+    '''
+
     path = Path.cwd()/"data"/model_name
     model = pickle.load(open(path, 'rb'))
     X = df.loc[:, df.columns != 'Cavitation'].astype('float')
@@ -30,6 +45,14 @@ def get_feature_importance(df, model_name, testset_folder):
     return importance
 
 def evaluation_save(model_location, testset_folder, window_size):
+    '''
+    Evaluate performance of model and returns as dict
+    :param model_location: model to laod
+    :param testset_folder: test set folder
+    :param window_size: window size of trained model
+    :return: test set, model, window size, acc, prec, rec, f1
+
+    '''
 
     print(f"Evaluating model {model_location}!")
     path = model_location#Path.cwd()/"data"/model_name
@@ -46,6 +69,18 @@ def evaluation_save(model_location, testset_folder, window_size):
 
 
 def eval_all_script(data,data2,data3, traindatalist, traindatalocation ="data", save_folder_model =  "data/models ", save_folder_result =  "data/results" ,data4=None ):
+    '''
+    Train models and evaluate performance of multiple models on multiple test sets
+    Multiple window sizes tested
+    :param data1: test data set 1
+    :param data2: test data set 2
+    :param data3: test data set 3
+    :param traindatalist: train set list to train
+    :param save_folder_model: where to save all trained models
+    :param save_folder_result: Where to save result of evaluation
+    :param data4: test data set 4
+    :return: result_df
+    '''
     result_df = pd.DataFrame(columns=["test", "model", "window_size_sec", "accuracy", "precision", "recall", "f1"])
     default_param = {
         'max_depth': range(2, 10, 1),
@@ -118,32 +153,11 @@ def eval_all_script_2(data,data2,data3, traindatalist, traindatalocation ="data"
     return result_df
 
 
-# Classification_pipe_all(i, "data/train_oil_vacuum", evaluation="recall", parameter=default_param,
-#                         window_size_eval=False, gridsearch=True, save_folder=save_folder_model)
-# eval2 = evaluation_save(f"{save_folder_model}/model_train_oil_vacuum_grid_{i}.sav", data, i)
-# result_df = pd.concat([result_df, pd.DataFrame(eval2, index=[0])])
-# eval2 = evaluation_save(f"{save_folder_model}/model_train_oil_vacuum_grid_{i}.sav", data2, i)
-# result_df = pd.concat([result_df, pd.DataFrame(eval2, index=[0])])
-# eval2 = evaluation_save(f"{save_folder_model}/model_train_oil_vacuum_grid_{i}.sav", data3, i)
-# result_df = pd.concat([result_df, pd.DataFrame(eval2, index=[0])])
-# if data4:
-#     eval4 = evaluation_save(f"{save_folder_model}/model_train_oil_vacuum_teflon_grid_{i}.sav", data4, i)
-#     result_df = pd.concat([result_df, pd.DataFrame(eval4, index=[0])])
-# print(result_df)
-# Classification_pipe_all(i, "data/train_oil_vacuum_teflon", evaluation="recall", parameter=default_param,
-#                         window_size_eval=False, gridsearch=True, save_folder=save_folder_model)
-# eval3 = evaluation_save(f"{save_folder_model}/model_train_oil_vacuum_teflon_grid_{i}.sav", data, i)
-# result_df = pd.concat([result_df, pd.DataFrame(eval3, index=[0])])
-# eval3 = evaluation_save(f"{save_folder_model}/model_train_oil_vacuum_teflon_grid_{i}.sav", data2, i)
-# result_df = pd.concat([result_df, pd.DataFrame(eval3, index=[0])])
-# eval3 = evaluation_save(f"{save_folder_model}/model_train_oil_vacuum_teflon_grid_{i}.sav", data3, i)
-# result_df = pd.concat([result_df, pd.DataFrame(eval3, index=[0])])
-# if data4:
-#     eval4 = evaluation_save(f"{save_folder_model}/model_train_oil_vacuum_teflon_grid_{i}.sav", data4, i)
-#     result_df = pd.concat([result_df, pd.DataFrame(eval4, index=[0])])
-# print(result_df)
+
 
 if __name__ == "__main__":
+    ## testing around##############################################################
+
 
     #evaluation("model_oil_pump_small.sav", "data/test_data_2",1)
 
